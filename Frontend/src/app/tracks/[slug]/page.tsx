@@ -5,33 +5,37 @@ import { useEffect, useState } from "react";
 import { getTrackBySlug, likeTrack, PlayTrack, getSimilarTracks } from "@/lib/tracks";
 import { TrackType } from "@/types/tracksTypes";
 import { usePlayer } from "@/context/PlayerContext";
-import { Play, Pause, Headphones, Heart, Share2, Download } from "lucide-react";
+import { Play, Pause, Headphones, Heart, Share2, Download, ChevronDown } from "lucide-react";
 import { TrackCard } from "@/components/TrackCard";
 import { TrackShare } from "@/components/TrackShare";
 import Link from "next/link";
+import React from "react";
+import Image from "next/image";
 
 
 export default function TrackDetailPage() {
   const params = useParams();
-  const slug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug; // безопасно достаём string
+  const slug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
 
   const [track, setTrack] = useState<TrackType | null>(null);
   const [similar, setSimilar] = useState<TrackType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
+  const [showLyrics, setShowLyrics] = useState(false);
+  const [showDescription, setShowDescription] = useState(false)
   const { setQueue, currentTrack, isPlaying, togglePlay } = usePlayer();
 
   useEffect(() => {
-    if (!slug) return; // безопасно, если slug отсутствует
+    if (!slug) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data: TrackType = await getTrackBySlug(slug) as TrackType;
+        const data = await getTrackBySlug(slug);
         setTrack(data);
-        setIsLiked(data.is_liked ?? false);
+        setIsLiked(data?.is_liked ?? false);
 
-        const recs: TrackType[] = await getSimilarTracks(slug);
+        const recs = await getSimilarTracks(slug);
         setSimilar(recs);
       } catch (err) {
         console.error(err);
@@ -42,7 +46,6 @@ export default function TrackDetailPage() {
 
     fetchData();
   }, [slug]);
-
 
   if (loading) return <p className="text-center mt-10 text-gray-700 dark:text-gray-300 animate-pulse">Загрузка трека...</p>;
   if (!track) return <p className="text-center mt-10 text-red-500">Трек не найден</p>;
@@ -79,119 +82,191 @@ export default function TrackDetailPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center gap-12 p-6 bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex flex-col items-center gap-12 p-4 md:p-8 bg-gray-50 dark:bg-gray-900">
 
-      {/* Основной трек */}
-      <div className="flex flex-col md:flex-row items-center gap-8 w-full max-w-6xl">
-        <img
+      {/* Основной блок: cover + info */}
+      <div className="flex flex-col md:flex-row gap-6 w-full max-w-6xl">
+
+        {/* Cover */}
+        <Image
           src={track.cover}
           alt={track.name}
-          className="w-72 h-72 md:w-96 md:h-96 object-cover rounded-xl shadow-2xl border border-gray-300 dark:border-gray-700"
+          width={400}
+          height={400}
+          priority
+          className="w-full md:w-80 h-80 md:h-80 object-cover rounded-xl shadow-2xl border border-gray-300 dark:border-gray-700"
         />
 
-        <div className="flex flex-col gap-4 md:gap-6 w-full md:flex-1">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">{track.name}</h1>
+        {/* Info + Buttons */}
+        <div className="flex flex-col flex-1 gap-4 py-5">
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 text-gray-700 dark:text-gray-300">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 text-gray-700 dark:text-gray-300">
-              <span>
-                Исполнитель:{" "}
-                <Link
-                  href={`/artists/${track.artist.slug}`}
-                  className="font-medium text-gray-900 dark:text-gray-100 hover:underline"
-                >
-                  {track.artist.name}
-                </Link>
-              </span>
+          {/* Название */}
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100">{track.name}</h1>
 
-              <span>
-                Альбом:{" "}
-                {track.album ? (
-                  <Link
-                    href={`/albums/${track.album.slug}`}
-                    className="font-medium text-gray-900 dark:text-gray-100 hover:underline"
-                  >
-                    {track.album.name}
-                  </Link>
-                ) : (
-                  <span className="font-medium">{track.album ?? "Single"}</span>
-                )}
-              </span>
-
-              <span>
-                Длительность: <span className="font-medium">{formatDuration(track.duration)}</span>
-              </span>
+          {/* Artist / Featured / Album / Duration / Language / Mood */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-gray-700 dark:text-gray-300">
+            <div className="flex flex-col gap-1">
+              <span>Artist: <Link href={`/artists/${track.artist.slug}`} className="font-semibold hover:underline">{track.artist.name}</Link></span>
+              {track.featured_artists && track.featured_artists.length > 0 && (
+                <span>Featuring: {track.featured_artists.map(fa => (
+                  fa.name
+                ))}</span>
+              )}
+              <span>Album: {track.album ? <Link href={`/albums/${track.album.slug}`} className="font-medium hover:underline">{track.album.name}</Link> : "Single"}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span>Duration: <span className="font-medium">{formatDuration(track.duration)}</span></span>
+              {track.language && <span>Language: <span className="font-medium">{track.language}</span></span>}
+              {track.mood && <span>Mood: <span className="font-medium">{track.mood}</span></span>}
             </div>
           </div>
 
-          {/* Жанры */}
-          <div className="flex flex-wrap gap-2">
-            {track.genres.map(g => (
-              <span key={g.id} className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 text-xs font-semibold">
-                {g.name}
-              </span>
-            ))}
+          {/* Genres */}
+          <div className="flex items-center gap-4 mt-2">
+            {track.genres && track.genres.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-1">
+                {track.genres.map(g => (
+                  <span key={g.id} className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 text-xs font-semibold">{g.name}</span>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Статистика и действия */}
-          <div className="flex flex-wrap items-center gap-6 mt-4 text-gray-600 dark:text-gray-300">
+          {/* 🎵 Controls: Play / Like / Download / Share */}
+          <div className="flex flex-wrap items-center gap-3 mt-3">
 
-            {/* Прослушивания */}
-            <div className="flex items-center gap-1">
-              <Headphones className="w-5 h-5" />
-              <span>{track.plays_count}</span>
-            </div>
+            {/* ▶️ Play Button */}
+            <button
+              onClick={handlePlay}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-all
+      ${currentTrack?.id === track.id && isPlaying
+                  ? "bg-red-500 hover:bg-red-600 text-white scale-105"
+                  : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
+            >
+              {currentTrack?.id === track.id && isPlaying ? (
+                <>
+                  <Pause className="w-4 h-4 animate-pulse" /> Playing
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4" /> Play
+                </>
+              )}
+            </button>
 
-            {/* Лайк */}
-            <div
+            {/* ❤️ Like Button */}
+            <button
               onClick={handleLike}
-              className="flex items-center gap-1 cursor-pointer transition-all hover:scale-110 select-none"
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-all
+              ${isLiked ? "bg-pink-500 hover:bg-pink-600 text-white scale-105"
+              : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100"
+                }`}
             >
               <Heart
-                className={`w-5 h-5 transition-colors duration-200 ${isLiked ? "text-red-500 fill-red-500" : "text-gray-400 dark:text-gray-500"
+                className={`w-4 h-4 transition-colors duration-300 ${isLiked ? "fill-current text-white" : "text-gray-500"
                   }`}
               />
               <span>{track.likes_count}</span>
-            </div>
+              <span className="hidden sm:inline">Like</span>
+            </button>
 
-            {/* Share */}
-            <TrackShare track={track} />
+            {/* ⬇️ Download Button */}
+            <a
+              href={track.audio}
+              download
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium shadow-sm bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 transition-all"
+            >
+              <Download className="w-4 h-4" />
+              <span>{track.download_count}</span>
+              <span className="hidden sm:inline">Download</span>
+            </a>
 
-            {/* Download кнопка */}
-            <div className="flex items-center gap-1 cursor-pointer transition-all hover:scale-110 select-none">
-              <Download className="w-5 h-5" />
-              <a
-                href={track.audio}
-                download
-                className="text-sm font-medium text-gray-800 dark:text-gray-100 hover:underline"
-              >
-                Download
-              </a>
+            {/* 🔗 Share */}
+            <div className="">
+              <TrackShare track={track} />
             </div>
           </div>
 
-          {/* Play Button */}
-          <button
-            onClick={handlePlay}
-            className={`mt-4 w-40 h-14 rounded-full font-semibold text-white flex items-center justify-center gap-2 transition-transform duration-200 transform ${currentTrack?.id === track.id && isPlaying ? "bg-green-500 hover:bg-green-600 scale-105" : "bg-blue-500 hover:bg-blue-600 scale-105"}`}
-          >
-            {currentTrack?.id === track.id && isPlaying ? <Pause className="w-5 h-5 animate-pulse" /> : <Play className="w-5 h-5" />}
-            {currentTrack?.id === track.id && isPlaying ? "Pause" : "Play"}
-          </button>
 
-          {/* Описание трека */}
-          {track.description && (
-            <p className="mt-4 text-gray-700 dark:text-gray-300 whitespace-pre-line">{track.description}</p>
-          )}
+          <div className="flex items-center gap-4 mt-2">
+            {track.youtube_url && (
+              <a href={track.youtube_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 font-medium hover:underline">
+                <Play className="w-5 h-5" /> Watch on YouTube
+              </a>
+            )}
+          </div>
+
         </div>
+      </div>
+
+      {/* 📜 Description & Lyrics */}
+      <div className="w-full max-w-4xl space-y-4">
+        {track.description && (
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
+            <button
+              onClick={() => {
+                setShowDescription((prev) => !prev);
+                if (!showDescription) setShowLyrics(false);
+              }}
+              className="w-full flex justify-between items-center px-5 py-3 font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            >
+              <span>Description</span>
+              <ChevronDown
+                className={`w-5 h-5 transform transition-transform duration-300 ${showDescription ? "rotate-180" : ""
+                  }`}
+              />
+            </button>
+
+            {/* Контент description */}
+            <div
+              className={`grid transition-all duration-300 ease-in-out ${showDescription ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                }`}
+            >
+              <div className="overflow-hidden">
+                <div className="px-5 py-4 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 whitespace-pre-line">
+                  {track.description}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {track.lyrics && (
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
+            <button
+              onClick={() => {
+                setShowLyrics((prev) => !prev);
+                if (!showLyrics) setShowDescription(false);
+              }}
+              className="w-full flex justify-between items-center px-5 py-3 font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            >
+              <span>Lyrics</span>
+              <ChevronDown
+                className={`w-5 h-5 transform transition-transform duration-300 ${showLyrics ? "rotate-180" : ""
+                  }`}
+              />
+            </button>
+
+            {/* Контент lyrics */}
+            <div
+              className={`grid transition-all duration-300 ease-in-out ${showLyrics ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                }`}
+            >
+              <div className="overflow-hidden">
+                <div className="px-5 py-4 text-gray-800 dark:text-gray-200 border-t border-gray-200 dark:border-gray-700 whitespace-pre-line">
+                  {track.lyrics}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Похожие треки */}
       {similar.length > 0 && (
         <div className="w-full max-w-6xl mt-12">
-          <h2 className="text-3xl font-semibold mb-6 text-gray-900 dark:text-gray-100 text-center">
-            Похожие треки
-          </h2>
+          <h2 className="text-3xl font-semibold mb-6 text-gray-900 dark:text-gray-100 text-center">Related tracks</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {similar.map(t => (
               <TrackCard key={t.slug} track={t} allTracks={similar} />

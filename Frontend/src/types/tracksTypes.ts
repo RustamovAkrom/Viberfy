@@ -11,19 +11,32 @@ export interface TrackType {
   audio: string;
   cover: string;
   description?: string;
+  lyrics?: string;
 
   release_date?: string;
   created_at: string;
   updated_at: string;
   plays_count: number;
   likes_count: number;
+  download_count: number;
+
+  bpm?: number;
+  bitrate?: number;
+
+  mood?: string;
+
+  youtube_url?: string;
 
   is_liked?: boolean;
   likedByUser?: boolean;
+  is_explicit: boolean;
 
   is_published: boolean;
 
-  genres: GenreType[];
+  genres?: GenreType[];
   artist: ArtistType;
-  album: AlbumType;
+  featured_artists?: ArtistType[];
+  album?: AlbumType;
+
+  language?: string;
 }

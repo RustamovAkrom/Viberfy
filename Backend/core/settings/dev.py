@@ -1,4 +1,5 @@
 from .base import *
+# from core.config.logs import * # noqa
 
 DEBUG = True
 

@@ -26,7 +26,6 @@ export default function Navbar({ initialAuth }: NavbarProps) {
     ? `${process.env.NEXT_PUBLIC_API_URL}${me.avatar}`
     : "/default-avatar.png";
 
-  // Получение данных пользователя
   useEffect(() => {
     setMounted(true);
     if (initialAuth) {
@@ -36,7 +35,6 @@ export default function Navbar({ initialAuth }: NavbarProps) {
     }
   }, [initialAuth]);
 
-  // Закрытие dropdown при клике вне области
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {

@@ -2,14 +2,12 @@ from rest_framework import serializers
 from apps.musics.models import Artist, Album, Track, Genre
 
 
-# ---------------------- GENRE ----------------------
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ["id", "name", "slug"]
 
 
-# ---------------------- TRACK ----------------------
 class ArtistTrackSerializer(serializers.ModelSerializer):
     genres = GenreSerializer(many=True, read_only=True)
 
@@ -28,7 +26,6 @@ class ArtistTrackSerializer(serializers.ModelSerializer):
         )
 
 
-# ---------------------- ALBUM ----------------------
 class AlbumWithTracksSerializer(serializers.ModelSerializer):
     tracks = ArtistTrackSerializer(many=True, read_only=True)
 
@@ -45,7 +42,6 @@ class AlbumWithTracksSerializer(serializers.ModelSerializer):
         )
 
 
-# ---------------------- ARTIST LIST ----------------------
 class ArtistListSerializer(serializers.ModelSerializer):
     albums_count = serializers.SerializerMethodField()
     tracks_count = serializers.SerializerMethodField()
@@ -74,7 +70,6 @@ class ArtistListSerializer(serializers.ModelSerializer):
         return obj.tracks.filter(is_published=True).count()
 
 
-# ---------------------- ARTIST DETAIL ----------------------
 class ArtistDetailSerializer(serializers.ModelSerializer):
     albums = AlbumWithTracksSerializer(many=True, read_only=True)
     tracks = ArtistTrackSerializer(many=True, read_only=True)
@@ -109,7 +104,7 @@ class ArtistDetailSerializer(serializers.ModelSerializer):
     def get_tracks_count(self, obj):
         return obj.tracks.filter(is_published=True).count()
 
-# ---------------------- ARTIST CREATE/UPDATE ----------------------
+
 class ArtistCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Artist

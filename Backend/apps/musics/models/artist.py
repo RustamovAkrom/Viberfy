@@ -72,16 +72,5 @@ class Artist(NamedModel):
             cache.set(cache_key, artists, timeout=60)
         return artists
 
-    # --- Свойства для сериализации ---
-    # @property
-    # def albums_count(self):
-    #     """Количество опубликованных альбомов"""
-    #     return self.albums.filter(is_published=True).count()
-
-    # @property
-    # def tracks_count(self):
-    #     """Количество опубликованных треков"""
-    #     return self.tracks.filter(is_published=True).count()
-
     def __str__(self):
         return self.name

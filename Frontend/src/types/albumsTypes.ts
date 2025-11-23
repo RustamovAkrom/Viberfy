@@ -15,12 +15,21 @@ export type AlbumType = {
   name: string;
   slug: string;
   owner: number;
-  artist: ArtistType;
   release_date: string | null;
   cover: string | null;
+  
+  description?: string;
   is_published: boolean;
+  
+  artist: ArtistType;
   tracks: TrackType[];
+
   tracks_count: number;
+  plays_count: number;
+  likes_count: number;
+  listens_last_week: number;
+  listens_last_month: number;
+  
   created_at: string;
   updated_at: string;
 }

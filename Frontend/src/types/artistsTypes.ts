@@ -20,10 +20,19 @@ export type ArtistType = {
   bio: string | null;
   avatar: string | null;
   meta: string | null;
+
+  folowers_count?: number;
+  total_plays?: number;
+  total_likes?: number;
+
+  is_verified?: boolean;
+
   albums: AlbumType[];
   tracks: TrackType[];
-  created_at: string;
-  updated_at: string;
+
   albums_count: number;
   tracks_count: number;
+
+  created_at: string;
+  updated_at: string;
 };

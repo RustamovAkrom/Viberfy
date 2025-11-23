@@ -70,8 +70,8 @@ export const TrackCard: React.FC<TrackCardProps> = ({ track, allTracks }) => {
       <div className="p-4 flex flex-col gap-2">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">{track.name}</h3>
 
-        {/* <div className="flex flex-wrap gap-1">
-          {track.genres.map((g) => (
+        <div className="flex flex-wrap gap-1">
+          {track.genres?.map((g) => (
             <span
               key={g.id}
               className="px-2 py-0.5 text-xs rounded-full bg-indigo-100 dark:bg-indigo-800 text-indigo-800 dark:text-indigo-100"
@@ -79,7 +79,7 @@ export const TrackCard: React.FC<TrackCardProps> = ({ track, allTracks }) => {
               {g.name}
             </span>
           ))}
-        </div> */}
+        </div>
 
         <div className="flex items-center justify-between mt-2 text-gray-600 dark:text-gray-300">
           <span className="flex items-center gap-1 text-sm">

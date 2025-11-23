@@ -1,6 +1,5 @@
 from .base import *
 from core.config.cache import * # noqa
-from core.config.logs import * # noqa
 
 
 DEBUG = False # В продакшене должно быть False

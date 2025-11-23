@@ -10,7 +10,7 @@ from .album import Album
 from .genres import Genre
 from apps.musics.managers.track import TrackManager
 from django.core.cache import cache
-
+ 
 
 class Track(NamedModel):
     owner = models.ForeignKey(

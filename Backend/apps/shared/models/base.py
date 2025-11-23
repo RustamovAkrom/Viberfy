@@ -13,7 +13,7 @@ class TimeStempedModel(models.Model):
 class NamedModel(TimeStempedModel):
     name = models.CharField(verbose_name=_("Name"), max_length=255, db_index=True)
     slug = models.SlugField(
-        verbose_name=_("Slug"), max_length=255, blank=True, null=True
+        verbose_name=_("Slug"), max_length=255, blank=True, null=True, unique=True
     )
 
     class Meta:
